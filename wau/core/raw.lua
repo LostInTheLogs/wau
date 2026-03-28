@@ -1,4 +1,4 @@
-local ffi = require "cffi"
+local ffi = require "ffi"
 
 local M = ffi.load "wayland-client"
 

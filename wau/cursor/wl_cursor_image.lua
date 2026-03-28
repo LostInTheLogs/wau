@@ -7,7 +7,7 @@
 -- @classmod wl_cursor_image
 -- @alias M
 
-local ffi = require "cffi"
+local ffi = require "ffi"
 local raw = require "wau.cursor.raw"
 
 local M = { mt = {} }

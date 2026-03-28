@@ -11,7 +11,7 @@
 -- @classmod wl_proxy
 -- @alias M
 
-local ffi = require "cffi"
+local ffi = require "ffi"
 
 local wl_interface = require "wau.core.wl_interface"
 local raw = require "wau.core.raw"

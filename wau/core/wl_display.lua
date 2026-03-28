@@ -5,7 +5,7 @@
 -- @classmod wl_display
 -- @alias M
 
-local ffi = require "cffi"
+local ffi = require "ffi"
 
 local raw = require "wau.core.raw"
 
