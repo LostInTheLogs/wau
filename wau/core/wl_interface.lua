@@ -71,10 +71,21 @@ local function translate_opcode_to_method(iface, opcode)
     local args = { ... }
     for i = 1, #sig do
       local c = sig:sub(i, i)
+      local val = args[i]
       if c == "i" or c == "h" then
-        args[i] = ffi.cast("int32_t", args[i])
+        args[i] = ffi.cast("int32_t", val)
       elseif c == "u" then
-        args[i] = ffi.cast("uint32_t", args[i])
+        args[i] = ffi.cast("uint32_t", val)
+      elseif c == "f" then
+        args[i] = ffi.cast("int32_t", val)
+      elseif c == "s" then
+        args[i] = ffi.cast("const char*", val)
+      elseif c == "o" then
+        args[i] = ffi.cast("struct wl_object*", val)
+      elseif c == "a" then
+        args[i] = ffi.cast("struct wl_array*", val)
+      elseif c == "n" then
+        -- handled manually
       end
     end
     return unpack(args)
@@ -90,7 +101,7 @@ local function translate_opcode_to_method(iface, opcode)
       return other
     end
   elseif type == mtype.CONSTRUCTOR then
-    return function(other, ...) return other:marshal_constructor(opcode, method_data.types[1], pack_args(sig, ...)) end
+    return function(other, ...) return other:marshal_constructor(opcode, pack_args(sig, method_data.types[1], ...)) end
   elseif type == mtype.DESTRUCTOR then
     return function(other, ...)
       other:marshal(opcode, pack_args(sig, ...))

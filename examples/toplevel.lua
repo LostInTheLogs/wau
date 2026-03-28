@@ -1,4 +1,7 @@
 -- a minimal exmaple of using xdg-shell for creating a toplevel window with wau
+table.unpack = unpack
+
+local ffi = require "ffi"
 
 local wau = require "wau"
 wau:require "protocol.xdg-shell"
@@ -54,11 +57,11 @@ local kb_listener = {
 
 seat:add_listener {
   ["capabilities"] = function(_, c)
-    if c & wau.wl_seat.Capability.POINTER ~= 0 then
+    if bit.band(c, wau.wl_seat.Capability.POINTER) ~= 0 then
       local pointer = seat:get_pointer()
       pointer:add_listener(pointer_listener)
     end
-    if c & wau.wl_seat.Capability.KEYBOARD ~= 0 then
+    if bit.band(c, wau.wl_seat.Capability.KEYBOARD) ~= 0 then
       local keyboard = seat:get_keyboard()
       keyboard:add_listener(kb_listener)
     end
@@ -68,7 +71,9 @@ seat:add_listener {
 -- getting our dummy buffer
 
 local function get_buffer()
+  print(size)
   local fd, data = helpers.allocate_shm(size)
+  print(fd, data)
   local mypool = shm:create_pool(fd, size)
   local mybuffer = mypool:create_buffer(0, width, height, stride, 0)
   local cairo_surface = cairo.ImageSurface.create_for_data(data, cairo.Format.ARGB32, width, height, 4 * width)
