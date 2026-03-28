@@ -1,6 +1,6 @@
-local ffi = require("cffi")
+local ffi = require "cffi"
 
-local M = ffi.load("wayland-client")
+local M = ffi.load "wayland-client"
 
 local s = [[
 typedef int32_t wl_fixed_t;
@@ -43,9 +43,7 @@ union wl_argument {
 typedef int (*wl_dispatcher_func_t)(const void *, void *, uint32_t,
 				    const struct wl_message *,
 				    union wl_argument *);
-]]
-..
-[[
+]] .. [[
 
 struct wl_proxy;
 
@@ -202,4 +200,3 @@ wl_display_read_events(struct wl_display *display);
 ffi.cdef(s)
 
 return M
-

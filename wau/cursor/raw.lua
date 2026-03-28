@@ -1,6 +1,6 @@
-local ffi = require("cffi")
+local ffi = require "cffi"
 
-local M = ffi.load("wayland-cursor")
+local M = ffi.load "wayland-cursor"
 
 local s = [[
 struct wl_cursor_theme;
