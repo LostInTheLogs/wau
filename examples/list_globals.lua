@@ -1,9 +1,10 @@
 -- probably the simplest program to write, lists all bindable globals
+table.unpack = unpack
 local wau = require "wau"
 
 -- this is an example of passing the server path to the connect function
 -- in this case it is redundant since it uses the default path anyway
-local path_to_server = os.getenv "XDG_RUNTIME_DIR" .. "/wayland-1"
+local path_to_server = os.getenv "XDG_RUNTIME_DIR" .. "/wayland-0"
 local display = wau.wl_display.connect(path_to_server)
 assert(display, "Failed to connect to wayland server")
 

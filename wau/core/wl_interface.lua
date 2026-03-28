@@ -18,14 +18,14 @@ local M = { mt = {}, __private = {} }
 local function parse_types(types)
   if #types == 0 then
     local ptr = ffi.C.malloc(1 * ffi.sizeof "struct wl_interface*")
-    local dummy_types = ffi.cast("struct wl_interface**", ptr)
+    local dummy_types = ffi.cast("const struct wl_interface**", ptr)
     dummy_types[0] = ffi.nullptr
     return dummy_types
   else
     local ptr = ffi.C.malloc(#types * ffi.sizeof "struct wl_interface*")
-    local result = ffi.cast("struct wl_interface**", ptr)
+    local result = ffi.cast("const struct wl_interface**", ptr)
     for i, interface in ipairs(types) do
-      result[i - 1] = interface == 0 and ffi.nullptr or interface
+      result[i - 1] = interface == 0 and ffi.nullptr or ffi.cast("struct wl_interface*", interface)
     end
     return result
   end
@@ -67,23 +67,44 @@ local function get_method_type(method_data)
 end
 
 local function translate_opcode_to_method(iface, opcode)
+  local function pack_args(sig, ...)
+    local args = { ... }
+    for i = 1, #sig do
+      local c = sig:sub(i, i)
+      if c == "i" or c == "h" then
+        args[i] = ffi.cast("int32_t", args[i])
+      elseif c == "u" then
+        args[i] = ffi.cast("uint32_t", args[i])
+      end
+    end
+    return unpack(args)
+  end
+
   local method_data = iface.methods[opcode + 1]
+  local sig = method_data.signature
   local type = get_method_type(method_data)
+
   if type == mtype.METHOD then
     return function(other, ...)
-      other:marshal(opcode, ...)
+      other:marshal(opcode, pack_args(sig, ...))
       return other
     end
   elseif type == mtype.CONSTRUCTOR then
-    return function(other, ...) return other:marshal_constructor(opcode, method_data.types[1], ...) end
+    return function(other, ...) return other:marshal_constructor(opcode, method_data.types[1], pack_args(sig, ...)) end
   elseif type == mtype.DESTRUCTOR then
     return function(other, ...)
-      other:marshal(opcode, ...)
+      other:marshal(opcode, pack_args(sig, ...))
       raw.wl_proxy_destroy(other)
     end
   elseif type == mtype.VERSIONED_CONSTRUCTOR then
     return function(other, name, interface, version)
-      return other:marshal_constructor_versioned(opcode, interface, version, name, interface.name)
+      return other:marshal_constructor_versioned(
+        opcode,
+        interface,
+        ffi.cast("uint32_t", version),
+        ffi.cast("uint32_t", name),
+        interface.name
+      )
     end
   end
 end

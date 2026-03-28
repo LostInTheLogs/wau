@@ -1,5 +1,7 @@
 -- a minimal exmaple of using xdg-shell for creating a toplevel window with wau
+table.unpack = unpack
 
+local ffi = require "ffi"
 local wau = require "wau"
 local helpers = require "helpers"
 wau:require "protocol.xdg-shell"
@@ -21,6 +23,7 @@ local size = stride * height
 local compositor, seat, shm, xdg, output
 registry:add_listener {
   ["global"] = function(_, name, interface, version)
+    interface = ffi.string(interface)
     if interface == "wl_output" then
       output = registry:bind(name, wau.wl_output, version)
     elseif interface == "wl_compositor" then
@@ -37,6 +40,7 @@ registry:add_listener {
 }
 display:roundtrip()
 assert(compositor and shm and seat and output and xdg, "Couldn't load globals")
+print "globals loaded"
 
 -- get cursor surfaces by name
 
@@ -54,6 +58,7 @@ end
 -- a dumb example of handeling input + setting the cursor
 
 local cursor_surface, cursor_image = get_cursor_surface "cross"
+print "cursor loaded"
 
 local function dumb_log(eventname)
   return function(...) print(eventname, ...) end
@@ -79,11 +84,11 @@ local keyboard_listener = {
 
 seat:add_listener {
   ["capabilities"] = function(_, c)
-    if c & wau.wl_seat.Capability.POINTER ~= 0 then
+    if bit.band(c, wau.wl_seat.Capability.POINTER) ~= 0 then
       local pointer = seat:get_pointer()
       pointer:add_listener(pointer_listener)
     end
-    if c & wau.wl_seat.Capability.KEYBOARD ~= 0 then
+    if bit.band(c, wau.wl_seat.Capability.KEYBOARD) ~= 0 then
       local keyboard = seat:get_keyboard()
       keyboard:add_listener(keyboard_listener)
     end
@@ -94,6 +99,7 @@ seat:add_listener {
 
 local function get_buffer()
   local fd, data = helpers.allocate_shm(size)
+  print(fd, size)
   local mypool = shm:create_pool(fd, size)
   local mybuffer = mypool:create_buffer(0, width, height, stride, 0)
   local cairo_surface = cairo.ImageSurface.create_for_data(data, cairo.Format.ARGB32, width, height, 4 * width)
@@ -107,6 +113,7 @@ end
 
 local mainloop = GLib.MainLoop(nil, nil)
 local running = true
+print "running"
 
 local surface = compositor:create_surface()
 surface:add_listener {

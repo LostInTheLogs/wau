@@ -12,7 +12,7 @@ local cairo = lgi.cairo
 
 -- connect + basic vars
 
-local display = wau.wl_display.connect()
+local display = wau.wl_display.connect(os.getenv "XDG_RUNTIME_DIR" .. "/wayland-0")
 local registry = display:get_registry()
 
 local width = 200

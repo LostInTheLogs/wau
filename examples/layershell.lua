@@ -2,6 +2,8 @@
 
 -- loading protocols
 
+table.unpack = unpack
+local lgi = require "lgi"
 local wau = require "wau"
 wau:require "protocol.xdg-shell" -- layershell implicitly depends on xdg-shell
 wau:require "protocol.wlr-layer-shell-unstable-v1"
@@ -9,12 +11,11 @@ wau:require "protocol.wlr-layer-shell-unstable-v1"
 -- something we need later on
 
 local helpers = require "helpers" -- helpers.so should be built already
-local lgi = require "lgi"
 local cairo = lgi.cairo
 
 -- connecting to the server
 
-local display = wau.wl_display.connect()
+local display = wau.wl_display.connect(os.getenv "XDG_RUNTIME_DIR" .. "/wayland-0")
 assert(display, "Couldn't connect to the wayland server")
 
 -- register globals
